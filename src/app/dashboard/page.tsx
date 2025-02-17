@@ -14,7 +14,10 @@ import {
   FaListAlt,
   FaShoppingCart,
   FaHourglassHalf,
-  FaUserPlus
+  FaUserPlus,
+  FaSearch,
+  FaCheckCircle,
+  FaTable 
 } from "react-icons/fa";
 
 // Interface para os itens do menu
@@ -57,12 +60,22 @@ export default function PortalIndexComponente() {
   // Definição dos itens do menu
   const menuItems: MenuItem[] = [
     {
+      label: "Consultar produto", 
+      icon: <FaSearch size={24} />,
+      route: "/lista-precos/product-screen?listarProdutos=false&search=",
+    },    
+    {
       label: "Lista de Preços", // Novo item
       icon: <FaTags size={24} />,
-      route: "/lista-precos",
+      route: "/lista-precos/product-screen?listarProdutos=true&search=",
     },
     {
-      label: "Pedidos",
+      label: "Pedidos Aguardando Aprovação",
+      icon: <FaCheckCircle  size={24} />,
+      route: "/pedidos-aprovacao",
+    },    
+    {
+      label: "Pedidos Finalizados",
       icon: <FaShoppingCart size={24} />,
       route: "/pedidos-finalizados",
     },
@@ -102,6 +115,12 @@ export default function PortalIndexComponente() {
       label: "Lista de Preços Geral",
       icon: <FaListAlt size={24} />,
       route: "/lista-precos-geral",
+    },
+    {
+      permissions: ["Precos.Write"],
+      label: "Tabela de Preços",
+      icon: <FaTable  size={24} />,
+      route: "/tabela-precos",
     },
     {
       permissions: ["Client.Write"],
