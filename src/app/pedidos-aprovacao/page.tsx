@@ -38,7 +38,7 @@ export default function ApproveOrderScreen() {
     const fetchPedidosPendentes = async () => {
       try {
         const response = await axios.get("/api/Pedido/GetPedidosByStatus", {
-          params: { usuarioId: user.id, status: "pendente" },
+          params: { usuarioId: user.id, status: "aprovar" },
         });
         setPedidos(response.data);
       } catch (error) {
@@ -206,7 +206,7 @@ export default function ApproveOrderScreen() {
 
       {/* Rodapé fixo */}
       <div className="fixed bottom-0 left-0 w-full bg-white shadow-md p-4 flex justify-between">
-        <button onClick={() => router.push("../dashboard")} className="bg-gray-500 text-white px-4 py-2 rounded">
+        <button onClick={() => router.push("/")} className="bg-gray-500 text-white px-4 py-2 rounded">
           Voltar
         </button>
         {pedidos.map((pedido) => (

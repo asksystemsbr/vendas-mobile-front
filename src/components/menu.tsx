@@ -52,7 +52,7 @@ export default function Menu() {
 
   const handleLogout = () => {
     logout();
-    router.push('/login');
+    router.push('/');
   };
   
   const goToPage = (route: string) => {

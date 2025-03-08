@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../auth';
 import axios from '../axiosConfig';
+import Image from "next/image";
 
 interface Credentials {
   Nome: string;
@@ -63,74 +64,77 @@ export default function Login() {
   };
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gray-100">
-    {/* Formulário de login */}
-    <div className="w-full max-w-md bg-white p-8 rounded-md shadow-md">
-      <h2 className="text-xl font-semibold text-gray-700 mb-8 text-center">Informe seus dados abaixo</h2>
-      <form onSubmit={handleLogin}>
-        <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700">Nome</label>
-          <input
-            type="text"
-            value={credentials.Nome}
-            onChange={(e) => setCredentials({ ...credentials, Nome: e.target.value })}
-            className="block w-full px-4 py-2 mt-2 text-gray-700 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-opacity-50 focus:ring-blue-400"
-            required
-          />
+    <div 
+      className="flex justify-center  items-center min-h-screen bg-cover bg-center"
+      // style={{ backgroundImage: "url('/background.jpg')" }}
+    >
+      <div className="w-full max-w-md bg-white p-8 rounded-md shadow-md bg-opacity-90">
+        {/* Logo */}
+        <div className="flex justify-center mb-6">
+          <Image src="/logo.jpg" alt="Logo" width={120} height={120} />
         </div>
-        <div className="mb-6">
-          <label className="block text-sm font-medium text-gray-700">Senha *</label>
-          <div className="relative">
+
+        <h2 className="text-xl font-semibold text-gray-700 mb-8 text-center">Informe seus dados abaixo</h2>
+        <form onSubmit={handleLogin}>
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700">Nome</label>
             <input
-              type={showPassword ? 'text' : 'password'}
-              value={credentials.Senha}
-              onChange={(e) => setCredentials({ ...credentials, Senha: e.target.value })}
-              className="block w-full px-4 py-3 mt-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-blue-400"
+              type="text"
+              value={credentials.Nome}
+              onChange={(e) => setCredentials({ ...credentials, Nome: e.target.value })}
+              className="block w-full px-4 py-2 mt-2 text-gray-700 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-opacity-50 focus:ring-blue-400"
               required
             />
-            <span
-              className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 cursor-pointer"
-              onClick={() => setShowPassword(!showPassword)}
-            >
-              {showPassword ? '🙈' : '👁'}
-            </span>
           </div>
-        </div>
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-gray-700">Senha *</label>
+            <div className="relative">
+              <input
+                type={showPassword ? 'text' : 'password'}
+                value={credentials.Senha}
+                onChange={(e) => setCredentials({ ...credentials, Senha: e.target.value })}
+                className="block w-full px-4 py-3 mt-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-blue-400"
+                required
+              />
+              <span
+                className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 cursor-pointer"
+                onClick={() => setShowPassword(!showPassword)}
+              >
+                {showPassword ? '🙈' : '👁'}
+              </span>
+            </div>
+          </div>
 
-        {/* <div className="flex justify-between items-center mb-6">
-          <a href="#" className="text-sm text-blue-600 hover:underline">Esqueci minha senha</a>
-        </div> */}
-
-        <button
-          type="submit"
-          className="w-full px-4 py-3 bg-green-500 text-white rounded-md hover:bg-green-600"
-        >
-          Entrar
-        </button>
-      </form>
-    </div>
-
-    {/* Snackbar Notification */}
-    {snackbar.show && (
-      <div
-        className={`fixed top-5 right-5 p-4 mb-4 text-white rounded-md shadow-lg ${snackbar.color} animate-slide-up`}
-        style={{ width: '300px' }}
-      >
-        <p>{snackbar.message}</p>
-        <div className="relative w-full h-1 mt-2 bg-gray-300">
-          <div
-            className="absolute left-0 top-0 h-full bg-white"
-            style={{ width: `${progress}%` }}
-          ></div>
-        </div>
-        <button
-          onClick={() => setSnackbar({ ...snackbar, show: false })}
-          className="text-sm underline focus:outline-none"
-        >
-          Fechar
-        </button>
+          <button
+            type="submit"
+            className="w-full px-4 py-3 bg-green-500 text-white rounded-md hover:bg-green-600"
+          >
+            Entrar
+          </button>
+        </form>
       </div>
-    )}
-  </div>
+
+      {/* Snackbar Notification */}
+      {snackbar.show && (
+        <div
+          className={`fixed top-5 right-5 p-4 mb-4 text-white rounded-md shadow-lg ${snackbar.color} animate-slide-up`}
+          style={{ width: '300px' }}
+        >
+          <p>{snackbar.message}</p>
+          <div className="relative w-full h-1 mt-2 bg-gray-300">
+            <div
+              className="absolute left-0 top-0 h-full bg-white"
+              style={{ width: `${progress}%` }}
+            ></div>
+          </div>
+          <button
+            onClick={() => setSnackbar({ ...snackbar, show: false })}
+            className="text-sm underline focus:outline-none"
+          >
+            Fechar
+          </button>
+        </div>
+      )}
+    </div>
   );
 }

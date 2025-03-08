@@ -85,63 +85,72 @@ export default function ApproveOrderScreen() {
   };
 
   return (
-    <div className="container mx-auto p-8">
-      <h1 className="text-xl font-bold mb-4">Pedidos Finalizados</h1>
-      <div className="grid gap-4">
-        {pedidos.map((pedido) => (
-          <div key={pedido.id} className="border p-4 rounded-lg space-y-4">
-            <h2 className="text-lg font-bold">Pedido #{pedido.id} - {formatDateTimeForGrid(pedido.data)}</h2>
-            <p>
-              <strong>Total do Pedido:</strong> R$ {pedido.itens?.reduce((sum, item) => sum + (item?.valorVenda??0) * (item?.quantidadeEstoque??0), 0).toFixed(2)}
-            </p>
-            <div className="grid gap-4">
-            {pedido.itens?.map((item) => (
-              <div key={item.id} className="flex flex-col border p-2 rounded space-y-2">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-bold">{item.nome}</p>
-                    <p className="text-sm text-gray-500">Código: {item.codigoInterno}</p>
-                  </div>
-                  <div className="flex space-x-2">
-                    <button
-                      onClick={() => abrirModalProduto(item)}
-                      className="bg-gray-500 text-white px-2 py-1 rounded"
-                    >
-                      Consultar
-                    </button>
-                  </div>
-                </div>
-                <div className="flex items-center space-x-8">
-                  <div>
-                    <label className="text-sm font-bold">Mín:</label>
-                    <br />
-                    <span className="ml-2">{item.estoqueMin ?? 0}</span>
-                  </div>
-                  <div>
-                    <label className="text-sm font-bold">Máx:</label>
-                    <br />
-                    <span className="ml-2">{item.estoqueMax ?? 0}</span>
-                  </div>
-                  <div>
-                    <label className="text-sm font-bold">Pedido:</label>
-                    <br />
-                    <span className="ml-2">{item.quantidadeEstoque ?? 0}</span>
-                  </div>
-                </div>
-              </div>
-            ))}
-            </div>
-          </div>
-        ))}
+    <div className="container mx-auto p-8 flex flex-col min-h-screen">
+      {/* Cabeçalho fixo */}
+      <div className="fixed top-0 left-0 w-full bg-white shadow-md z-10 p-4">
+        <h1 className="text-lg font-bold">Pedidos Finalizados</h1>
       </div>
-      <div className="flex justify-between mt-4">
-        <button
-          onClick={() => router.push("../dashboard")}
-          className="bg-gray-500 text-white px-4 py-2 rounded"
-        >
+  
+      {/* Espaço para o cabeçalho fixo */}
+      <div className="mt-24 overflow-auto flex-grow pb-32">
+        <div className="grid gap-3">
+          {pedidos.map((pedido) => (
+            <div key={pedido.id} className="border-b pb-4 mb-4">
+              {/* Cabeçalho do Pedido */}
+              <div className="flex justify-between items-center">
+                <h2 className="font-bold">Pedido #{pedido.id}</h2>
+                <p className="text-sm">{formatDateTimeForGrid(pedido.data)}</p>
+                <p className="font-bold text-green-600">
+                  Total: R$ {pedido.itens?.reduce((sum, item) => sum + (item?.valorVenda ?? 0) * (item?.quantidadeEstoque ?? 0), 0).toFixed(2)}
+                </p>
+              </div>
+  
+              {/* Itens do Pedido */}
+              {pedido.itens?.map((item: Produto) => (
+                <div key={item.id} className="flex flex-col border p-2 rounded space-y-1 relative">
+                  {/* Nome do produto */}
+                  <p className="font-bold">{item.nome}</p>
+  
+                  {/* Códigos */}
+                  <div className="text-sm text-gray-500">
+                    <p>Código Fábrica: {item.codigoInterno}</p>
+                    <p>Código Cliente: {item.totalizadorParcial}</p>
+                  </div>
+  
+                  {/* Quantidade, Unitário e Total */}
+                  <div className="flex items-center justify-between text-sm mt-1">
+                    <div>
+                      <label className="font-bold">Pedido:</label>
+                      <br />
+                      <span>{item.quantidadeEstoque ?? 0}</span>
+                    </div>
+                    <div>
+                      <label className="font-bold">Unitário:</label>
+                      <br />
+                      <span className="text-green-600 font-bold">R$ {(item.valorVenda ?? 0).toFixed(2)}</span>
+                    </div>
+                    <div>
+                      <label className="font-bold">Total:</label>
+                      <br />
+                      <span className="font-bold text-blue-600">
+                        R$ {((item.quantidadeEstoque ?? 0) * (item.valorVenda ?? 0)).toFixed(2)}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ))}
+        </div>
+      </div>
+  
+      {/* Rodapé fixo */}
+      <div className="fixed bottom-0 left-0 w-full bg-white shadow-md p-4 flex justify-between">
+        <button onClick={() => router.push("/")} className="bg-gray-500 text-white px-4 py-2 rounded">
           Voltar
         </button>
       </div>
+  
       {/* Modal de Produto */}
       {modalProduto && (
         <Modal
@@ -163,19 +172,13 @@ export default function ApproveOrderScreen() {
           <p>
             <strong>Preço:</strong> R$ {modalProduto.valorVenda?.toFixed(2)}
           </p>
-          <img
-            src={modalProduto.foto}
-            alt={modalProduto.nome}
-            className="mt-4 max-w-full h-auto"
-          />
-          <button
-            onClick={fecharModalProduto}
-            className="bg-blue-500 text-white px-4 py-2 mt-4 rounded"
-          >
+          <img src={modalProduto.foto} alt={modalProduto.nome} className="mt-4 max-w-full h-auto" />
+          <button onClick={fecharModalProduto} className="bg-blue-500 text-white px-4 py-2 mt-4 rounded">
             Fechar
           </button>
         </Modal>
       )}
+  
       {/* Snackbar */}
       {snackbar.show && (
         <Snackbar message={snackbar.message} type={snackbar.type} progress={progress} onClose={hideSnackbar} />

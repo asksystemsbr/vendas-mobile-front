@@ -1,136 +1,55 @@
-//src/components/PortalIndex.tsx
 "use client";
 import React, { useEffect } from "react";
-import { useRouter } from 'next/navigation';
- import { useAuth  } from '../auth'; // Importa o hook de autenticação
-import {
-  FaSignOutAlt,
-  FaTags,
-  FaClipboardList,
-  FaFileInvoice,
-  FaFileAlt,
-  FaBarcode,
-  FaDollarSign,
-  FaListAlt,
-  FaShoppingCart,
-  FaHourglassHalf,
-  FaUserPlus,
-  FaSearch,
-  FaCheckCircle,
-  FaTable 
-} from "react-icons/fa";
+import { useRouter } from "next/navigation";
+import { useAuth } from "../auth";
+import { FaSignOutAlt } from "react-icons/fa";
 
-// Interface para os itens do menu
 interface MenuItem {
   permissions?: string[];
   label: string;
-  icon: React.ReactNode;
   route: string;
 }
 
-// Componente de Menu
 export default function PortalIndexComponente() {
-   const router = useRouter();
-   const authContext = useAuth ();
+  const router = useRouter();
+  const authContext = useAuth();
 
-   useEffect(() => {
+  useEffect(() => {
     if (!authContext || !authContext.user) {
-      router.push("./login");
+      router.push("/login");
     }
-  }, [authContext, router]); // Executa o redirecionamento após verificar `authContext`
-
-
+  }, [authContext, router]);
 
   if (!authContext || !authContext.user) {
-    return null; // Evita renderizar conteúdo antes do redirecionamento
+    return null;
   }
 
-   const { user,logout } = authContext;
+  const { user, logout } = authContext;
 
-     // Função para verificar se o usuário possui permissão
   const userCan = (permissions: string[] = []) => {
     return permissions.every((perm) => user.permissions?.includes(perm));
   };
 
   const handleLogout = () => {
-    logout(); // Chama a função de logout
-    router.push("./lgoin"); // Redireciona para a página de login ou inicial
+    logout();
+    router.push("/login");
   };
 
-  // Definição dos itens do menu
   const menuItems: MenuItem[] = [
-    {
-      label: "Consultar produto", 
-      icon: <FaSearch size={24} />,
-      route: "/lista-precos/product-screen?listarProdutos=false&search=",
-    },    
-    {
-      label: "Lista de Preços", // Novo item
-      icon: <FaTags size={24} />,
-      route: "/lista-precos/product-screen?listarProdutos=true&search=",
-    },
-    {
-      label: "Pedidos Aguardando Aprovação",
-      icon: <FaCheckCircle  size={24} />,
-      route: "/pedidos-aprovacao",
-    },    
-    {
-      label: "Pedidos Finalizados",
-      icon: <FaShoppingCart size={24} />,
-      route: "/pedidos-finalizados",
-    },
-    {
-      label: "Pedidos em Aberto",
-      icon: <FaClipboardList size={24} />,
-      route: "/pedidos-abertos",
-    },
-    {
-      label: "Pedidos Pendentes", // Novo item adicionado
-      icon: <FaHourglassHalf size={24} />,
-      route: "/pedidos-pendencias",
-    },    
-    {
-      label: "DANFE",
-      icon: <FaFileInvoice size={24} />,
-      route: "/danfe",
-    },
-    {
-      label: "XML",
-      icon: <FaFileAlt size={24} />,
-      route: "/xml",
-    },
-    {
-      label: "Boleto",
-      icon: <FaBarcode size={24} />,
-      route: "/boleto",
-    },
-    {
-      permissions: ["Cotacao.Write"],
-      label: "Cotação e Custo",
-      icon: <FaDollarSign size={24} />,
-      route: "/cotacao-custo",
-    },
-    {
-      permissions: ["Precos.Write"],
-      label: "Lista de Preços Geral",
-      icon: <FaListAlt size={24} />,
-      route: "/lista-precos-geral",
-    },
-    {
-      permissions: ["Precos.Write"],
-      label: "Tabela de Preços",
-      icon: <FaTable  size={24} />,
-      route: "/tabela-precos",
-    },
-    {
-      permissions: ["Client.Write"],
-      label: "Cadastro de Cliente", 
-      icon: <FaUserPlus size={24} />,
-      route: "/client",
-    },    
+    { label: "Consultar produto", route: "/lista-precos/product-screen?listarProdutos=false&search=" },
+    { label: "Lista de Preços", route: "/lista-precos/product-screen?listarProdutos=true&search=" },
+    { label: "Pedidos Aguardando Aprovação", route: "/pedidos-aprovacao" },
+    { label: "Pedidos Finalizados", route: "/pedidos-finalizados" },
+    { label: "Pedidos em Aberto", route: "/pedidos-abertos" },
+    { label: "Pedidos Pendentes", route: "/pedidos-pendencias" },
+    { label: "DANFE", route: "/danfe" },
+    { label: "XML", route: "/xml" },
+    { label: "Boleto", route: "/boleto" },
+    { permissions: ["Precos.Write"], label: "Lista de Preços Geral", route: "/lista-precos-geral" },
+    { permissions: ["Precos.Write"], label: "Tabela de Preços", route: "/tabela-precos" },
+    { permissions: ["Client.Write"], label: "Cadastro de Cliente", route: "/client" },
   ];
 
-  // Renderiza os itens de menu com base nas permissões
   return (
     <div className="flex flex-col min-h-screen">
       {/* Cabeçalho */}
@@ -145,26 +64,28 @@ export default function PortalIndexComponente() {
         >
           <FaSignOutAlt size={16} />
           <span className="text-sm">Sair</span>
-        </button>        
+        </button>
       </header>
 
       {/* Conteúdo Principal */}
       <main className="flex-grow p-4">
         <h2 className="text-lg font-bold mb-4">Selecione uma opção</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-          {menuItems.map((item) =>
-            !item.permissions || userCan(item.permissions) ? (
-              <div
-                key={item.label}
-                onClick={() => router.push(item.route)}
-                className="cursor-pointer transform transition-transform hover:scale-105"
-              >
-                <div className="flex flex-col items-center justify-center bg-gray-100 p-4 rounded-lg shadow-md hover:bg-gray-200">
-                  <div className="text-primary mb-2">{item.icon}</div>
-                  <p className="text-center font-medium text-sm">{item.label}</p>
+        <div className="flex flex-col gap-2">
+          {menuItems.map(
+            (item) =>
+              (!item.permissions || userCan(item.permissions)) && (
+                <div
+                  key={item.label}
+                  onClick={() => router.push(item.route)}
+                  className="cursor-pointer flex items-center gap-4 p-2 rounded-lg hover:bg-gray-200 transition-transform transform hover:scale-105"
+                >
+                  {/* Imagem à esquerda */}
+                  <img src="/option.png" alt="Ícone" className="w-8 h-8" />
+
+                  {/* Texto ao lado */}
+                  <p className="font-medium text-base">{item.label}</p>
                 </div>
-              </div>
-            ) : null
+              )
           )}
         </div>
       </main>

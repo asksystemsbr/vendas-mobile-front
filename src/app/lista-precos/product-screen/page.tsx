@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState,Suspense  } from "react";
 import Modal from "react-modal";
 import { useRouter, useSearchParams } from "next/navigation";
 import axios from "axios";
@@ -10,12 +10,22 @@ import { SnackbarState } from "@/models/snackbarState";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 
-export default function ProductScreen() {
+
+function SearchParamsComponent({ onParamsReady }: { onParamsReady: (params: URLSearchParams) => void }) {
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    onParamsReady(searchParams);
+  }, [searchParams, onParamsReady]);
+
+  return null;
+}
+
+function ProductScreenContent({ searchParams }: { searchParams: URLSearchParams }) {
   const [produtos, setProdutos] = useState<Produto[]>([]);
   const [categoriaId, setCategoriaId] = useState<number | null>(null);
   const [categoriaNome, setCategoriaNome] = useState<string>("");
   const router = useRouter();
-  const searchParams = useSearchParams();
   const [modalProduto, setModalProduto] = useState<Produto | null>(null);
   const [produtoFocado, setProdutoFocado] = useState<Produto | null>(null); // Produto atualmente focado no campo "Pedido"
 
@@ -414,5 +424,16 @@ export default function ProductScreen() {
           <Snackbar message={snackbar.message} type={snackbar.type} progress={progress} onClose={hideSnackbar} />
         )}
     </div>
+  );
+}
+
+export default function ProductScreen() {
+  const [searchParams, setSearchParams] = useState<URLSearchParams | null>(null);
+
+  return (
+    <Suspense fallback={<div>Carregando página...</div>}>
+      <SearchParamsComponent onParamsReady={setSearchParams} />
+      {searchParams && <ProductScreenContent searchParams={searchParams} />}
+    </Suspense>
   );
 }
