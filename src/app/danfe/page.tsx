@@ -47,7 +47,7 @@ export default function OrdersWithFilesScreen() {
         try {
           const response = await axios.get("/api/Pedido/GetFilesByPedido", {
             params: { pedidoId: pedido.id,
-                      type: "pdf",
+                      type: "nfe_pdf",
                       extension: "pdf"
              },
           });

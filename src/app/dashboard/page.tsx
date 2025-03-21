@@ -51,24 +51,14 @@ export default function PortalIndexComponente() {
   ];
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen bg-[#cae090] text-white">
       {/* Cabeçalho */}
-      <header className="bg-gradient-to-r from-blue-600 via-blue-500 to-blue-400 text-white text-center py-6 shadow-lg flex justify-between items-center px-4">
-        <div>
-          <h1 className="text-2xl font-extrabold tracking-wide">PORTAL DO CLIENTE</h1>
-          <p className="text-lg mt-2 font-medium">Bem-vindo CRC Vendas Mobile</p>
-        </div>
-        <button
-          onClick={handleLogout}
-          className="flex items-center space-x-2 bg-red-500 hover:bg-red-600 text-white py-1 px-3 rounded-md shadow-md transition-transform transform hover:scale-105"
-        >
-          <FaSignOutAlt size={16} />
-          <span className="text-sm">Sair</span>
-        </button>
-      </header>
+      {/* <header className="text-center py-4 shadow-md">
+        <h1 className="text-xl font-bold">Portal de Vendas</h1>
+      </header> */}
 
       {/* Conteúdo Principal */}
-      <main className="flex-grow p-4">
+      <main className="flex-grow p-4 min-h-[calc(100vh-300px)] max-h-[calc(100vh-200px)] overflow-auto">
         <h2 className="text-lg font-bold mb-4">Selecione uma opção</h2>
         <div className="flex flex-col gap-2">
           {menuItems.map(
@@ -77,22 +67,30 @@ export default function PortalIndexComponente() {
                 <div
                   key={item.label}
                   onClick={() => router.push(item.route)}
-                  className="cursor-pointer flex items-center gap-4 p-2 rounded-lg hover:bg-gray-200 transition-transform transform hover:scale-105"
+                  className="cursor-pointer flex items-center gap-4 p-2 rounded-lg hover:bg-green-500 transition-transform transform hover:scale-105"
                 >
-                  {/* Imagem à esquerda */}
+                  {/* Ícone à esquerda */}
                   <img src="/option.png" alt="Ícone" className="w-8 h-8" />
 
                   {/* Texto ao lado */}
-                  <p className="font-medium text-base">{item.label}</p>
+                  <p className="font-bold text-base">{item.label}</p>
                 </div>
               )
           )}
         </div>
       </main>
 
-      {/* Rodapé */}
-      <footer className="bg-gray-800 text-white text-center py-1 text-xs mt-auto">
-        CRC VENDAS MOBILE - DEVELOPED BY ASKSYSTEMS
+      {/* Rodapé com botão de logout */}
+      <footer className="bg-[#cae090] text-white text-center py-3 mt-4">
+        <button
+          onClick={handleLogout}
+          className="flex items-center mx-auto space-x-2 bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-md shadow-md transition-transform transform hover:scale-105"
+        >
+          <FaSignOutAlt size={16} />
+          <span className="text-sm font-bold">Sair</span>
+        </button>
+
+        <p className="text-xs mt-2 font-bold">CRC VENDAS MOBILE - DEVELOPED BY ASKSYSTEMS</p>
       </footer>
     </div>
   );

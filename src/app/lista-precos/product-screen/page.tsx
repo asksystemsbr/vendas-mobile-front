@@ -9,6 +9,7 @@ import { Snackbar } from "@/app/snackbar";
 import { SnackbarState } from "@/models/snackbarState";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
+import { FaImage, FaInfoCircle } from "react-icons/fa";
 
 
 function SearchParamsComponent({ onParamsReady }: { onParamsReady: (params: URLSearchParams) => void }) {
@@ -27,6 +28,7 @@ function ProductScreenContent({ searchParams }: { searchParams: URLSearchParams 
   const [categoriaNome, setCategoriaNome] = useState<string>("");
   const router = useRouter();
   const [modalProduto, setModalProduto] = useState<Produto | null>(null);
+  const [modalFoto, setModalFoto] = useState<Produto | null>(null);
   const [produtoFocado, setProdutoFocado] = useState<Produto | null>(null); // Produto atualmente focado no campo "Pedido"
 
   const [snackbar, setSnackbar] = useState(new SnackbarState());
@@ -38,6 +40,9 @@ function ProductScreenContent({ searchParams }: { searchParams: URLSearchParams 
 
   // Parâmetro para decidir se carrega produtos automaticamente ou só na busca
   const listarProdutos = searchParams.get("listarProdutos") === "true";
+  const [produtoSelecionado, setProdutoSelecionado] = useState<number | null>(null);
+
+  const [produtosEditados, setProdutosEditados] = useState<{ [key: number]: boolean }>({});
 
 
   useEffect(() => {
@@ -101,12 +106,16 @@ function ProductScreenContent({ searchParams }: { searchParams: URLSearchParams 
             params: { usuarioId: user.id },
           });
 
-          const produtosComEstoque = response.data.map((produto: Produto) => ({
-            ...produto,
-            quantidadeEstoque: Math.max(0, (produto.estoqueMax ?? 0) - (produto.estoqueMin ?? 0)),
-            // estoqueMin: 0,
-            // estoqueMax: 0,
-          }));
+          const produtosComEstoque = response.data.map((produto: Produto) => {
+            const quantidadeEstoque = Math.max(0, (produto.estoqueMax ?? 0) - (produto.estoqueMin ?? 0));
+            const pedidoCalculado = Math.max(0, (produto.estoqueMax ?? 0) - quantidadeEstoque);
+            return {
+              ...produto,
+              quantidadeEstoque,
+              quantidadeEstoqueSemNota: pedidoCalculado,
+            };
+          });
+
           setProdutos(produtosComEstoque);
         // }
       } catch (error) {
@@ -187,10 +196,44 @@ function ProductScreenContent({ searchParams }: { searchParams: URLSearchParams 
 
   const handleEditarQuantidade = (produtoId: number, quantidade: number) => {
     setProdutos((prev) =>
+      prev.map((produto) => {
+        if (produto.id !== produtoId) return produto;
+  
+        const estoqueMax = produto.estoqueMax ?? 0;
+        const novoPedido = Math.max(0, estoqueMax - quantidade); // Recalcula sempre
+  
+        return {
+          ...produto,
+          quantidadeEstoque: quantidade,
+          quantidadeEstoqueSemNota: novoPedido,
+        };
+      })
+    );
+  };
+  
+  const handleEditarQuantidadeSemNota = (produtoId: number, quantidade: number) => {
+    const isReset = quantidade === 0 || isNaN(quantidade);
+  
+    setProdutos((prev) =>
       prev.map((produto) =>
-        produto.id === produtoId ? { ...produto, quantidadeEstoque: quantidade } : produto
+        produto.id === produtoId
+          ? {
+              ...produto,
+              quantidadeEstoqueSemNota: quantidade,
+            }
+          : produto
       )
     );
+  
+    setProdutosEditados((prev) => {
+      const novosEditados = { ...prev };
+      if (isReset) {
+        delete novosEditados[produtoId]; // remove override
+      } else {
+        novosEditados[produtoId] = true; // marca como editado manualmente
+      }
+      return novosEditados;
+    });
   };
 
   const handleGerarPedido = async () => {
@@ -198,10 +241,11 @@ function ProductScreenContent({ searchParams }: { searchParams: URLSearchParams 
       const pedido = {
         clienteId: user.id, // ID do cliente (usuário logado)
         items: produtos
-          .filter((produto) => produto.quantidadeEstoque??0 > 0) // Apenas produtos com quantidade > 0
+          .filter((produto) => produto.quantidadeEstoqueSemNota??0 > 0) // Apenas produtos com quantidade > 0
           .map((produto) => ({
             produtoId: produto.id,
-            QuantidadeEstoque: produto.quantidadeEstoque,
+            QuantidadeEstoque: produto.quantidadeEstoqueSemNota,
+            quantidadeEstoqueSemNota: produto.quantidadeEstoque,
             EstoqueMin: produto.estoqueMin??0,
             estoqueMax: produto.estoqueMax??0,
             valorVenda: produto.valorVenda??0,
@@ -299,7 +343,7 @@ function ProductScreenContent({ searchParams }: { searchParams: URLSearchParams 
       />
       {/* Botões abaixo da pesquisa */}
       <div className="flex justify-between mt-2">
-        <button
+        {/* <button
             onClick={() => {
               if (!produtoFocado) {
                 alert("Selecione um produto antes de visualizar as fotos!");
@@ -310,7 +354,7 @@ function ProductScreenContent({ searchParams }: { searchParams: URLSearchParams 
           className="bg-gray-500 text-white px-3 py-2 rounded"
           >
             Fotos
-        </button>
+        </button> */}
         <button
            onClick={() => {
             setProdutos([]); // Limpa os produtos antes de mudar a rota
@@ -330,23 +374,55 @@ function ProductScreenContent({ searchParams }: { searchParams: URLSearchParams 
 
      {/* Espaço para o cabeçalho fixo */}
      <div className="mt-40 overflow-auto flex-grow pb-32">
-        <div className="grid gap-3">
+        <div className="grid gap-3 w-full max-w-[95%] mx-auto">
           {filteredProdutos.map((produto) => (
-            <div key={produto.id} className="flex flex-col border p-2 rounded space-y-1">
-              {/* Nome e Preço na mesma linha */}
+            <div
+              key={produto.id}
+              onClick={() => setProdutoSelecionado(produto.id)}
+              className={`flex flex-col border p-2 rounded space-y-1 cursor-pointer ${
+                produtoSelecionado === produto.id ? "bg-gray-300" : "bg-white"
+              }`}
+            >
+              {/* Nome do Produto - Permite quebra de linha */}
+              <p className="font-bold text-sm whitespace-normal break-words">{produto.nome}</p>
+
+              {/* Preço e Botões de Modais */}
               <div className="flex justify-between items-center">
-                <p className="font-bold">{produto.nome}</p>
-                <p className="font-bold text-green-600 whitespace-nowrap">R$ {produto.valorVenda?.toFixed(2)}</p>
+                <p className="font-bold text-green-600 text-sm">
+                  R$ {produto.valorVenda?.toFixed(2)}
+                </p>
+                <div className="flex space-x-2">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setModalProduto(produto);
+                    }}
+                    className="p-2 bg-gray-200 rounded flex items-center justify-center w-8 h-8"
+                    title="Ver descrição"
+                  >
+                    <FaInfoCircle className="text-gray-600" />
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setModalFoto(produto);
+                    }}
+                    className="p-2 bg-gray-200 rounded flex items-center justify-center w-8 h-8"
+                    title="Ver foto"
+                  >
+                    <FaImage className="text-gray-600" />
+                  </button>
+                </div>
               </div>
 
-              {/* Código interno e Código de fábrica */}
-              <div className="text-sm text-gray-500">
+              {/* Códigos */}
+              <div className="text-xs text-gray-500">
                 <p>Código Fabrica: {produto.codigoInterno}</p>
                 <p>Código Cliente: {produto.totalizadorParcial}</p>
               </div>
 
               {/* Estoques e Pedido */}
-              <div className="flex items-center space-x-4 text-sm mt-1">
+              <div className="flex items-center space-x-4 text-xs mt-1">
                 <div>
                   <label className="font-bold">Mín:</label>
                   <br />
@@ -363,14 +439,29 @@ function ProductScreenContent({ searchParams }: { searchParams: URLSearchParams 
                   <span>{produto.quantidadeEstoqueAnterior ?? 0}</span>
                 </div>
                 <div>
-                  <label className="font-bold">Pedido:</label>
+                  <label className="font-bold">Estoque:</label>
                   <input
                     type="text"
-                    value={produto.quantidadeEstoque}
+                    value={produto.quantidadeEstoque ?? '0'}
                     onFocus={() => setProdutoFocado(produto)}
                     onChange={(e) => handleEditarQuantidade(produto.id, Number(e.target.value))}
                     className={`border rounded w-full py-1 px-2 ${
-                      (produto.quantidadeEstoque??0) < (produto.quantidadeEstoqueAnterior??0) ? "border-red-500" : "border-green-500"
+                      (produto.quantidadeEstoque ?? 0) < (produto.quantidadeEstoqueAnterior ?? 0)
+                        ? "border-red-500"
+                        : "border-green-500"
+                    }`}
+                  />
+                </div>
+
+                <div>
+                  <label className="font-bold">Pedido:</label>
+                  <input
+                    type="text"
+                    value={produto.quantidadeEstoqueSemNota ?? '0'}
+                    onFocus={() => setProdutoFocado(produto)}
+                    onChange={(e) => handleEditarQuantidadeSemNota(produto.id, Number(e.target.value))}
+                    className={`border rounded w-full py-1 px-2 ${
+                      (produto.quantidadeEstoqueSemNota ?? 0) > 0 ? 'bg-red-200' : 'bg-white'
                     }`}
                   />
                 </div>
@@ -378,9 +469,9 @@ function ProductScreenContent({ searchParams }: { searchParams: URLSearchParams 
             </div>
           ))}
         </div>
-          {/* Adiciona um espaço extra no final da listagem */}
-        <div className="h-5"></div>
       </div>
+
+
 
       {/* Rodapé fixo */}
       <div className="fixed bottom-0 left-0 w-full bg-white shadow-md p-4 flex justify-between">
@@ -389,35 +480,51 @@ function ProductScreenContent({ searchParams }: { searchParams: URLSearchParams 
         <button onClick={() => router.push("../pedidos-finalizados")} className="bg-green-500 text-white px-4 py-2 rounded">Pedidos Finalizados</button>
         <button onClick={handleGerarPDF} className="bg-red-500 text-white px-4 py-2 rounded"> Gerar PDF </button>        
       </div>
-      {/* Modal de Produto */}
+      {/* Modal de Descrição */}
       {modalProduto && (
         <Modal
           isOpen={!!modalProduto}
-          onRequestClose={fecharModalProduto}
+          onRequestClose={() => setModalProduto(null)}
           className="bg-white p-6 max-w-md mx-auto rounded-lg shadow-lg"
           overlayClassName="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center"
         >
           <h2 className="text-lg font-bold mb-4">Detalhes do Produto</h2>
           <p><strong>Nome:</strong> {modalProduto.nome}</p>
-          <p><strong>Código Fabrica:</strong> {modalProduto.codigoInterno??''}</p>
-          <p><strong>Código Cliente:</strong> {modalProduto.totalizadorParcial??''}</p>
+          <p><strong>Código Fabrica:</strong> {modalProduto.codigoInterno ?? ''}</p>
+          <p><strong>Código Cliente:</strong> {modalProduto.totalizadorParcial ?? ''}</p>
           <p><strong>Preço:</strong> R$ {modalProduto.valorVenda?.toFixed(2)}</p>
-           
-           {/* Exibir a imagem carregada */}
-            {modalProduto.foto ? (
-              <img src={modalProduto.foto} alt={modalProduto.nome} className="mt-4 max-w-full h-auto" />
-            ) : (
-              <p className="text-gray-500 mt-4">Nenhuma imagem disponível</p>
-            )}
-
           <button
-            onClick={fecharModalProduto}
+            onClick={() => setModalProduto(null)}
             className="bg-blue-500 text-white px-4 py-2 mt-4 rounded"
           >
             Fechar
           </button>
         </Modal>
       )}
+
+      {/* Modal de Foto */}
+      {modalFoto && (
+        <Modal
+          isOpen={!!modalFoto}
+          onRequestClose={() => setModalFoto(null)}
+          className="bg-white p-6 max-w-md mx-auto rounded-lg shadow-lg"
+          overlayClassName="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center"
+        >
+          <h2 className="text-lg font-bold mb-4">Foto do Produto</h2>
+          {modalFoto.foto ? (
+            <img src={modalFoto.foto} alt={modalFoto.nome} className="mt-4 max-w-full h-auto" />
+          ) : (
+            <p className="text-gray-500 mt-4">Nenhuma imagem disponível</p>
+          )}
+          <button
+            onClick={() => setModalFoto(null)}
+            className="bg-blue-500 text-white px-4 py-2 mt-4 rounded"
+          >
+            Fechar
+          </button>
+        </Modal>
+      )}
+
 
        {/* Snackbar */}
         {snackbar.show && (

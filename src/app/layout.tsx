@@ -42,7 +42,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <meta name="theme-color" content="#4CAF50" />
 
         {/* Suporte a PWA em iOS */}
-        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <meta name="apple-mobile-web-app-title" content="Vendas Mobile" />
         <link rel="apple-touch-icon" href="/icon-192x192.png" />
@@ -55,7 +55,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         style={{ backgroundImage: "url('/background.jpg')" }}
       >
         <div className="flex h-screen">
-          <div id="__next" className="flex-1 bg-white bg-opacity-90 shadow-md rounded-lg p-6 m-4 overflow-y-auto">
+          <div id="__next" className="flex-1 bg-[#cae090] shadow-md rounded-lg p-6 m-4 overflow-y-auto">
             <AuthProvider>{children}</AuthProvider>
           </div>
         </div>

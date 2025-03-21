@@ -48,7 +48,7 @@ export default function OrdersWithFilesScreen() {
           const response = await axios.get("/api/Pedido/GetFilesByPedido", {
             params: { pedidoId: pedido.id,
                       type: "xml",
-                      extension: "xml"
+                      extension: "nfe_xml"
              },
           });
           setArquivos((prev) => pedido.id ? { ...prev, [pedido.id]: response.data } : prev);
